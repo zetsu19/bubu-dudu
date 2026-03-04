@@ -2,99 +2,106 @@
 
 import { useState, ChangeEvent } from "react";
 import Image from "next/image";
-import { upload } from "@vercel/blob/client";
 
 export default function Home() {
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [previewList, setPreviewList] = useState<string[]>([]);
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
+    const list = Array.from(e.target.files || []);
 
-    setFile(selected);
-    setPreview(URL.createObjectURL(selected));
+    setFiles(list);
+
+    setPreviewList(list.map((file) => URL.createObjectURL(file)));
   };
 
-  const uploadImage = async () => {
-    if (!file) return;
-
+  const uploadImages = async () => {
     try {
       setLoading(true);
 
-      const uploaded = await upload(file.name, file, {
-        access: "public",
-        handleUploadUrl: "/api/image",
-      });
+      const dummyUploaded = previewList;
 
-      setImageUrl(uploaded.url);
-      alert("Image uploaded!");
-    } catch (error) {
-      console.error(error);
-      alert("Upload failed");
+      setUploadedUrls(dummyUploaded);
+
+      alert("Images prepared ✅");
+    } catch {
+      alert("Upload failed ❌");
     } finally {
       setLoading(false);
     }
   };
 
-  const createCompany = async () => {
-    if (!imageUrl) {
-      alert("Upload image first");
-      return;
-    }
+  const createPost = async () => {
+    try {
+      if (!uploadedUrls.length) {
+        alert("Upload images first");
+        return;
+      }
 
-    const res = await fetch("/api/company", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: imageUrl }),
-    });
+      setLoading(true);
 
-    if (res.ok) {
-      alert("Company created!");
-    } else {
-      alert("Failed to create");
+      const res = await fetch("/api/createPost", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          images: uploadedUrls,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Create post failed");
+      }
+
+      alert("Post created ✅");
+
+      setFiles([]);
+      setPreviewList([]);
+      setUploadedUrls([]);
+    } catch (err) {
+      console.error(err);
+      alert("Post creation error ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0f1014] text-white gap-6 p-6">
-      <h1 className="text-3xl font-bold">Upload Company Image</h1>
-
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0f1014] text-white p-8 gap-6">
+      <h1 className="text-4xl font-bold text-purple-400">Create Post</h1>
       <input
         type="file"
+        multiple
         accept="image/*"
         onChange={handleFileChange}
-        className="bg-white/10 p-2 rounded-lg"
+        className="bg-white/10 p-3 rounded-xl cursor-pointer"
       />
-
-      {preview && (
-        <div className="relative w-64 h-64 rounded-xl overflow-hidden border border-white/20">
-          <Image src={preview} alt="Preview" fill className="object-cover" />
-        </div>
-      )}
-
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {previewList.map((img, i) => (
+          <div
+            key={i}
+            className="relative w-40 h-40 rounded-xl overflow-hidden border border-white/20"
+          >
+            <Image src={img} alt="preview" fill className="object-cover" />
+          </div>
+        ))}
+      </div>
       <button
-        onClick={uploadImage}
+        onClick={uploadImages}
         disabled={loading}
-        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold disabled:opacity-40"
+        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition"
       >
-        {loading ? "Uploading..." : "Upload Image"}
+        {loading ? "Processing..." : "Upload Images"}
       </button>
-
       <button
-        onClick={createCompany}
-        className="px-6 py-2 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold"
+        onClick={createPost}
+        className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold transition"
       >
-        Create Company
+        Create Post
       </button>
-
-      {imageUrl && (
-        <p className="text-sm text-green-400 break-all">
-          Uploaded URL: {imageUrl}
-        </p>
-      )}
     </div>
   );
 }
