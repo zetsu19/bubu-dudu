@@ -37,7 +37,12 @@ export default function Home() {
           body: formData,
         });
 
+        console.log("Upload response:", response.status);
+
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Backend error:", errorText);
+
           throw new Error("Upload failed");
         }
 
