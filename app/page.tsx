@@ -16,7 +16,6 @@ export default function Home() {
 
     setPreviewList(list.map((file) => URL.createObjectURL(file)));
   };
-
   const uploadImages = async () => {
     if (!files.length) {
       alert("Select images first");
@@ -26,9 +25,6 @@ export default function Home() {
     try {
       setLoading(true);
 
-      const uploadedUrls: string[] = [];
-
-      // ⭐ Upload in parallel (MOBILE SAFE)
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         formData.append("file", file);
@@ -38,22 +34,24 @@ export default function Home() {
           body: formData,
         });
 
-        if (!res.ok) throw new Error("Upload failed");
+        if (!res.ok) {
+          throw new Error("Upload failed");
+        }
 
         const data = await res.json();
 
-        return data.url;
+        return data?.url as string;
       });
 
       const results = await Promise.all(uploadPromises);
 
-      uploadedUrls.push(...results.filter(Boolean));
+      const validUrls = results.filter((url): url is string => Boolean(url));
 
-      setUploadedUrls(uploadedUrls);
+      setUploadedUrls(validUrls);
 
       alert("Upload success ✅");
     } catch (error) {
-      console.error(error);
+      console.error("Upload error:", error);
       alert("Upload failed ❌");
     } finally {
       setLoading(false);
