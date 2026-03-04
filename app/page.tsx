@@ -16,17 +16,38 @@ export default function Home() {
 
     setPreviewList(list.map((file) => URL.createObjectURL(file)));
   };
-
   const uploadImages = async () => {
     try {
+      if (!files.length) {
+        alert("Select images first");
+        return;
+      }
+
       setLoading(true);
 
-      const dummyUploaded = previewList;
+      const urls: string[] = [];
 
-      setUploadedUrls(dummyUploaded);
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      alert("Images prepared ✅");
-    } catch {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (data.url) {
+          urls.push(data.url);
+        }
+      }
+
+      setUploadedUrls(urls);
+
+      alert("Upload success ✅");
+    } catch (error) {
+      console.error(error);
       alert("Upload failed ❌");
     } finally {
       setLoading(false);
