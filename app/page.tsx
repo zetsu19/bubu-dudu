@@ -16,38 +16,43 @@ export default function Home() {
 
     setPreviewList(list.map((file) => URL.createObjectURL(file)));
   };
-  const uploadImages = async () => {
-    try {
-      if (!files.length) {
-        alert("Select images first");
-        return;
-      }
 
+  const uploadImages = async () => {
+    if (!files.length) {
+      alert("Select images first");
+      return;
+    }
+
+    try {
       setLoading(true);
 
-      const urls: string[] = [];
+      const uploadedUrls: string[] = [];
 
       for (const file of files) {
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("/api/upload", {
+        const response = await fetch("/api/upload", {
           method: "POST",
           body: formData,
         });
 
-        const data = await res.json();
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
 
-        if (data.url) {
-          urls.push(data.url);
+        const data = await response.json();
+
+        if (data?.url) {
+          uploadedUrls.push(data.url);
         }
       }
 
-      setUploadedUrls(urls);
+      setUploadedUrls(uploadedUrls);
 
       alert("Upload success ✅");
     } catch (error) {
-      console.error(error);
+      console.error("Upload error:", error);
       alert("Upload failed ❌");
     } finally {
       setLoading(false);
