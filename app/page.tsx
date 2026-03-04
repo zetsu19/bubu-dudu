@@ -28,36 +28,32 @@ export default function Home() {
 
       const uploadedUrls: string[] = [];
 
-      for (const file of files) {
+      // ⭐ Upload in parallel (MOBILE SAFE)
+      const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch("/api/upload", {
+        const res = await fetch("/api/upload", {
           method: "POST",
           body: formData,
         });
 
-        console.log("Upload response:", response.status);
+        if (!res.ok) throw new Error("Upload failed");
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Backend error:", errorText);
+        const data = await res.json();
 
-          throw new Error("Upload failed");
-        }
+        return data.url;
+      });
 
-        const data = await response.json();
+      const results = await Promise.all(uploadPromises);
 
-        if (data?.url) {
-          uploadedUrls.push(data.url);
-        }
-      }
+      uploadedUrls.push(...results.filter(Boolean));
 
       setUploadedUrls(uploadedUrls);
 
       alert("Upload success ✅");
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error(error);
       alert("Upload failed ❌");
     } finally {
       setLoading(false);
