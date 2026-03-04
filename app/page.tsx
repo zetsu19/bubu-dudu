@@ -10,7 +10,6 @@ export default function Home() {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
-  // Select file + preview
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -19,7 +18,6 @@ export default function Home() {
     setPreview(URL.createObjectURL(selected));
   };
 
-  // Upload image to Vercel Blob
   const uploadImage = async () => {
     if (!file) return;
 
@@ -41,7 +39,6 @@ export default function Home() {
     }
   };
 
-  // Send image URL to backend
   const createCompany = async () => {
     if (!imageUrl) {
       alert("Upload image first");
