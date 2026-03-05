@@ -43,7 +43,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const uploadRes = await fetch("/api/upload", {
+      const uploadRes = await fetch(`${window.location.origin}/api/upload`, {
         method: "POST",
         body: formData,
       });
@@ -98,8 +98,6 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fff5f5] bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-rose-100 via-slate-50 to-rose-50 p-6 relative">
       <Toaster position="top-center" />
-
-      {/* Back Button */}
       <button
         onClick={() => router.push("/pictures")}
         className="fixed top-8 left-8 z-50 group flex items-center gap-2 bg-white/80 backdrop-blur-md px-5 py-3 rounded-full border border-rose-100 text-rose-400 font-serif italic shadow-sm hover:shadow-md hover:bg-white transition-all active:scale-95"
