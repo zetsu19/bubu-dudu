@@ -1,127 +1,74 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Heart } from "lucide-react";
 
 export default function Home() {
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
-  const [uploadedUrl, setUploadedUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-
-    if (!selected) return;
-
-    setFile(selected);
-    setPreview(URL.createObjectURL(selected));
-  };
-
-  const uploadImage = async () => {
-    if (!file) {
-      alert("Select image first");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Upload failed");
-
-      const data = await res.json();
-
-      setUploadedUrl(data.url);
-
-      alert("Image uploaded ✅");
-    } catch (error) {
-      console.error(error);
-      alert("Upload failed ❌");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createPost = async () => {
-    if (!uploadedUrl) {
-      alert("Upload image first");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const res = await fetch("/api/createPost", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          image: uploadedUrl,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Create post failed");
-
-      alert("Post created ✅");
-
-      setFile(null);
-      setPreview("");
-      setUploadedUrl("");
-    } catch (error) {
-      console.error(error);
-      alert("Post failed ❌");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const router = useRouter();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0f1014] text-white gap-6 p-8">
-      <h1 className="text-4xl font-bold text-purple-400">Create Post</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-rose-50 via-white to-rose-100 relative overflow-hidden p-6">
+      <Heart className="absolute top-12 left-10 text-rose-100 w-28 h-28 rotate-12 -z-10 opacity-60" />
+      <Heart className="absolute bottom-12 right-10 text-rose-100 w-36 h-36 -rotate-12 -z-10 opacity-60" />
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="bg-white/10 p-3 rounded-xl"
-      />
-
-      {preview && (
-        <div className="relative w-64 h-64 rounded-xl overflow-hidden border border-white/20">
-          <Image src={preview} alt="preview" fill className="object-cover" />
+      <div className="text-center mb-14 animate-in fade-in slide-in-from-bottom-5 duration-700">
+        <div className="relative inline-block mb-3">
+          <Heart className="w-12 h-12 text-rose-400 mx-auto fill-rose-400 animate-pulse" />
         </div>
-      )}
 
-      <button
-        onClick={uploadImage}
-        disabled={loading}
-        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold"
-      >
-        Upload Image
-      </button>
+        <h1 className="text-4xl md:text-5xl font-serif italic text-gray-800 tracking-tight">
+          Who are you?
+        </h1>
 
-      <button
-        onClick={createPost}
-        disabled={loading}
-        className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold"
-      >
-        Create Post
-      </button>
-
-      {uploadedUrl && (
-        <p className="text-green-400 break-all text-sm">
-          Uploaded URL: {uploadedUrl}
+        <p className="text-rose-400 font-bold tracking-[0.35em] uppercase text-[10px] mt-3">
+          Choose your character
         </p>
-      )}
+      </div>
+      <div className="flex flex-col md:flex-row gap-8 w-full max-w-4xl">
+        <div
+          onClick={() => router.push("/bubu")}
+          className="flex-1 group cursor-pointer relative bg-white rounded-[2.5rem] p-6 shadow-xl shadow-black/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-pink-200/40 active:scale-[0.97] border border-pink-50 hover:border-pink-200"
+        >
+          <div className="aspect-square w-full relative rounded-[2.5rem] overflow-hidden bg-orange-50 group-hover:bg-pink-100 transition-all border border-white/60 shadow-inner">
+            <Image
+              src="/dududu.jpg"
+              alt="Dudu"
+              fill
+              sizes="(max-width:768px) 100vw, 400px"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              priority
+            />
+          </div>
+
+          <h2 className="mt-6 text-2xl font-black text-center text-gray-700 group-hover:text-pink-500  transition-colors">
+            I am Bubu
+          </h2>
+        </div>
+        <div
+          onClick={() => router.push("/dudu")}
+          className="flex-1 group cursor-pointer relative bg-white rounded-[2.5rem] p-6 shadow-xl shadow-black/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-sky-200/40 active:scale-[0.97] border border-sky-50 hover:border-sky-200"
+        >
+          <div className="aspect-square w-full relative rounded-[2.5rem] overflow-hidden bg-sky-50 group-hover:bg-sky-100 transition-all border border-white/60 shadow-inner">
+            <Image
+              src="/bububu.jpg"
+              alt="Bubu"
+              fill
+              sizes="(max-width:768px) 100vw, 400px"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
+              priority
+            />
+          </div>
+
+          <h2 className="mt-6 text-2xl font-black text-center text-gray-700 group-hover:text-sky-500 transition-colors">
+            I am Dudu
+          </h2>
+        </div>
+      </div>
+
+      <p className="mt-14 text-rose-300 text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">
+        Better Together Forever
+      </p>
     </div>
   );
 }
